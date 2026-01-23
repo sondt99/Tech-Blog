@@ -6,6 +6,14 @@ import { resolveContentAssetUrl } from '@/lib/content-assets'
 const postsDirectory = path.join(process.cwd(), 'content')
 const pagesDirectory = path.join(process.cwd(), 'content', 'pages')
 
+type PostStats = {
+  wordCount: number
+  readingTimeMinutes: number
+  headingCount: number
+  codeBlockCount: number
+  imageCount: number
+}
+
 const normalizeTags = (value: unknown): string[] => {
   if (Array.isArray(value)) {
     const tags = value
@@ -23,6 +31,44 @@ const normalizeTags = (value: unknown): string[] => {
   }
 
   return []
+}
+
+const countMatches = (value: string, regex: RegExp): number => {
+  const matches = value.match(regex)
+  return matches ? matches.length : 0
+}
+
+const stripMarkdown = (value: string): string => {
+  return value
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/^#{1,6}\s+/gm, ' ')
+    .replace(/^>\s+/gm, ' ')
+    .replace(/^\s*[-+*]\s+/gm, ' ')
+    .replace(/^\s*\d+\.\s+/gm, ' ')
+    .replace(/[*_~]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const calculatePostStats = (content: string): PostStats => {
+  const text = stripMarkdown(content)
+  const wordCount = text ? text.split(/\s+/).length : 0
+  const readingTimeMinutes = wordCount === 0 ? 0 : Math.max(1, Math.ceil(wordCount / 200))
+  const headingCount = countMatches(content, /^#{1,6}\s+/gm)
+  const codeBlockCount = countMatches(content, /```[\s\S]*?```/g)
+  const imageCount = countMatches(content, /!\[[^\]]*]\([^)]*\)/g)
+
+  return {
+    wordCount,
+    readingTimeMinutes,
+    headingCount,
+    codeBlockCount,
+    imageCount
+  }
 }
 
 export function getAllPosts() {
@@ -62,6 +108,7 @@ export function getPostBySlug(slug: string) {
       excerpt: data.excerpt,
       featured: resolveContentAssetUrl(data.featured || null),
       tags: normalizeTags(data.tags),
+      stats: calculatePostStats(content),
       content
     }
   } catch (error) {

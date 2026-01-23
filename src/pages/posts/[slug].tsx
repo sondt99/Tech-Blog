@@ -27,6 +27,13 @@ interface PostProps {
     date: string | null;
     content: string;
     tags: string[];
+    stats: {
+      wordCount: number;
+      readingTimeMinutes: number;
+      headingCount: number;
+      codeBlockCount: number;
+      imageCount: number;
+    };
   }
 }
 
@@ -137,6 +144,56 @@ export default function Post({ post }: PostProps) {
                 ) : null}
                 <TagList tags={post.tags} className="mt-3" />
               </div>
+
+              <section className="mb-8">
+                <div className="surface-panel rounded-xl p-5">
+                  <h2 className="text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-4">
+                    Article stats
+                  </h2>
+                  <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <div>
+                      <dt className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                        Read time
+                      </dt>
+                      <dd className="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
+                        {post.stats.readingTimeMinutes} min
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                        Words
+                      </dt>
+                      <dd className="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
+                        {post.stats.wordCount.toLocaleString('en-US')}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                        Headings
+                      </dt>
+                      <dd className="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
+                        {post.stats.headingCount}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                        Code blocks
+                      </dt>
+                      <dd className="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
+                        {post.stats.codeBlockCount}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                        Images
+                      </dt>
+                      <dd className="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
+                        {post.stats.imageCount}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </section>
               
               <div className="prose mx-auto surface-panel rounded-xl p-6 dark:prose-invert text-neutral-900 dark:text-neutral-100">
                 <div dangerouslySetInnerHTML={{ __html: content }} />
