@@ -73,6 +73,12 @@ export const siteConfig = {
       xUrl: 'https://x.com/_sondt_'
     }
   },
+  openSource: {
+    owner: 'sondt99',
+    repo: 'Tech-Blog',
+    branch: 'main',
+    repoUrl: 'https://github.com/sondt99/Tech-Blog'
+  },
   api: {
     helloName: 'sondt'
   }

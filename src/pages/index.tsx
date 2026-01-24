@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { getAllPosts } from '@/lib/markdown';
+import { getSiteCommit } from '@/lib/siteCommit';
 import Layout from '@/layouts/Layout';
 import { siteConfig } from '@/config/site';
 import TagList from '@/components/TagList';
+import OpenSourceStatus from '@/components/OpenSourceStatus';
 
 export const POSTS_PER_PAGE = 4;
 
@@ -40,7 +42,7 @@ function Pagination({ currentPage, totalPages }: PaginationProps) {
   );
 }
 
-export default function Home({ posts, currentPage, totalPages }: HomeProps) {
+export default function Home({ posts, currentPage, totalPages, siteCommit }: HomeProps) {
   return (
     <Layout title={siteConfig.home.pageTitle}>
       <div className="max-w-4xl mx-auto">
@@ -55,6 +57,7 @@ export default function Home({ posts, currentPage, totalPages }: HomeProps) {
           <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-300 max-w-2xl">
             {siteConfig.home.subtitle}
           </p>
+          <OpenSourceStatus siteCommit={siteCommit} />
         </section>
 
         <section className="space-y-10">
@@ -123,12 +126,14 @@ export interface HomeProps {
   }[];
   currentPage: number;
   totalPages: number;
+  siteCommit?: string | null;
 }
 
 export async function getStaticProps() {
   const allPosts = getAllPosts();
   const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
   const paginatedPosts = allPosts.slice(0, POSTS_PER_PAGE);
+  const siteCommit = getSiteCommit({ allowGit: true });
 
   return {
     props: {
@@ -142,6 +147,7 @@ export async function getStaticProps() {
       })),
       currentPage: 1,
       totalPages,
+      siteCommit,
     },
   };
 }
