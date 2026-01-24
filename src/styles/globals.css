@@ -20,6 +20,8 @@
   --code-fg: #f5f5f5;
   --inline-code-bg: rgba(0, 0, 0, 0.06);
   --inline-code-border: rgba(0, 0, 0, 0.12);
+  --code-selection-bg: #f5f5f5;
+  --code-selection-fg: #111111;
   --accent: #111111;
   --accent-contrast: #f5f5f5;
   --grid-line: rgba(17, 17, 17, 0.06);
@@ -43,6 +45,8 @@
   --code-fg: #f5f5f5;
   --inline-code-bg: rgba(255, 255, 255, 0.08);
   --inline-code-border: rgba(255, 255, 255, 0.16);
+  --code-selection-bg: #e6e6e6;
+  --code-selection-fg: #111111;
   --accent: #ffffff;
   --accent-contrast: #101010;
   --grid-line: rgba(255, 255, 255, 0.08);
@@ -293,6 +297,11 @@ body {
   background: var(--code-bg);
   color: var(--code-fg);
   @apply my-6 p-5 rounded-xl overflow-x-auto border border-neutral-800 shadow-sm;
+}
+
+.prose pre ::selection {
+  background: var(--code-selection-bg);
+  color: var(--code-selection-fg);
 }
 
 .prose pre code {
