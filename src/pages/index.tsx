@@ -56,7 +56,7 @@ export default function Home({ posts, currentPage, totalPages }: HomeProps) {
           <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-300 max-w-2xl">
             {siteConfig.home.subtitle}
           </p>
-          <OpenSourceStatus />
+          {siteConfig.openSource.enabled && <OpenSourceStatus />}
         </section>
 
         <section className="space-y-10">

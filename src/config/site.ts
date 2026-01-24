@@ -74,10 +74,20 @@ export const siteConfig = {
     }
   },
   openSource: {
+    enabled: true,
+    // true is enable status <Vercel>
     owner: 'sondt99',
     repo: 'Tech-Blog',
     branch: 'main',
-    repoUrl: 'https://github.com/sondt99/Tech-Blog'
+    repoUrl: 'https://github.com/sondt99/Tech-Blog',
+    labels: {
+      summaryTitle: 'Open-source',
+      statusLabel: 'Status',
+      upToDate: 'Up to date',
+      outdated: 'Outdated',
+      unknown: 'Status unknown',
+      checking: 'Checking updates'
+    }
   },
   api: {
     helloName: 'sondt'

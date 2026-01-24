@@ -60,6 +60,7 @@ const formatDate = (iso?: string | null) => {
 
 export default function OpenSourceStatus() {
   const [state, setState] = useState<StatusState>({ status: 'idle', data: null });
+  const labels = siteConfig.openSource.labels;
 
   useEffect(() => {
     let cancelled = false;
@@ -95,10 +96,10 @@ export default function OpenSourceStatus() {
 
   const summary = useMemo(() => {
     if (state.status === 'loading' || state.status === 'idle') {
-      return { label: 'Checking updates', tone: 'neutral' as StatusTone };
+      return { label: labels.checking, tone: 'neutral' as StatusTone };
     }
     if (state.status === 'error' || !state.data) {
-      return { label: 'Status unknown', tone: 'neutral' as StatusTone };
+      return { label: labels.unknown, tone: 'neutral' as StatusTone };
     }
 
     const comparison = state.data.comparison;
@@ -107,15 +108,15 @@ export default function OpenSourceStatus() {
       if (state.data.siteCommit) {
         const isSame = state.data.latestCommit.sha === state.data.siteCommit;
         return {
-          label: isSame ? 'Up to date' : 'Status unknown',
+          label: isSame ? labels.upToDate : labels.unknown,
           tone: isSame ? ('ok' as StatusTone) : ('neutral' as StatusTone)
         };
       }
-      return { label: 'Status unknown', tone: 'neutral' as StatusTone };
+      return { label: labels.unknown, tone: 'neutral' as StatusTone };
     }
 
     if (comparison.status === 'unknown') {
-      return { label: 'Status unknown', tone: 'neutral' as StatusTone };
+      return { label: labels.unknown, tone: 'neutral' as StatusTone };
     }
 
     const isOutdated =
@@ -124,7 +125,7 @@ export default function OpenSourceStatus() {
       (comparison.behindBy ?? 0) > 0;
 
     return {
-      label: isOutdated ? 'Outdated' : 'Up to date',
+      label: isOutdated ? labels.outdated : labels.upToDate,
       tone: isOutdated ? ('warn' as StatusTone) : ('ok' as StatusTone)
     };
   }, [state]);
@@ -199,7 +200,8 @@ export default function OpenSourceStatus() {
       <summary className="cursor-pointer list-none">
         <span className="inline-flex items-center gap-3 rounded-full border border-neutral-300/70 bg-neutral-100/70 px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900/50 dark:text-neutral-400">
           <span className={`h-2 w-2 rounded-full ${summaryTone.dot}`} />
-          <span className="text-neutral-500 dark:text-neutral-400">Open-source status</span>
+          <span className="text-neutral-500 dark:text-neutral-400">{labels.summaryTitle}</span>
+          <span className="text-neutral-500 dark:text-neutral-400">{labels.statusLabel}:</span>
           <span className={summaryTone.text}>{summary.label}</span>
         </span>
       </summary>
@@ -244,7 +246,7 @@ export default function OpenSourceStatus() {
             </span>
           </div>
           <div>
-            Status: <span className="font-mono">{detailLines.statusText}</span>
+            {labels.statusLabel}: <span className="font-mono">{detailLines.statusText}</span>
           </div>
           {detailLines.compareUrl && (
             <a
