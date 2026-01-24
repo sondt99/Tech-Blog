@@ -139,7 +139,7 @@ export function getPage(slug: string) {
     return {
       slug,
       title: data.title,
-      lastUpdated: data.lastUpdated,
+      lastUpdated: data.lastUpdated ? String(data.lastUpdated) : null,
       content
     }
   } catch (error) {
