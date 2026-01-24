@@ -3,7 +3,15 @@ title: "About Me"
 date: "2024-03-15"
 excerpt: "About sondt (nosiaht), a computer engineering student and security researcher focused on CTFs."
 featured: "/images/spid3r.png"
-tags: []
+timeline:
+  - year: "2024"
+    category: "Work"
+    place: "Company Name"
+    role: "Security Engineer"
+  - year: "2022"
+    category: "Study"
+    place: "University Name"
+    role: "B.Sc. in Information Security"
 ---
 
 ![](/images/spid3r.png)
