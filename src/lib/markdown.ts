@@ -15,6 +15,7 @@ import remarkEmoji from 'remark-emoji'
 import rehypeContentAssets from '@/lib/rehype-content-assets'
 import rehypePrism from '@/lib/rehype-prism'
 import type { Plugin } from 'unified'
+import rehypeSanitize, { defaultSchema, type Options as SanitizeSchema } from 'rehype-sanitize'
 
 const postsDirectory = path.join(process.cwd(), 'content')
 const pagesDirectory = path.join(process.cwd(), 'content', 'pages')
@@ -184,6 +185,16 @@ type RenderMarkdownResult = {
   headings: TocItem[]
 }
 
+const sanitizeSchema: SanitizeSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames ?? []), 'figure', 'figcaption'],
+  attributes: {
+    ...defaultSchema.attributes,
+    '*': [...(defaultSchema.attributes?.['*'] ?? []), 'className'],
+    img: [...(defaultSchema.attributes?.img ?? []), 'title']
+  }
+}
+
 const renderMarkdown = (content: string): RenderMarkdownResult => {
   const headings: TocItem[] = []
   const html = unified()
@@ -194,6 +205,7 @@ const renderMarkdown = (content: string): RenderMarkdownResult => {
     .use(remarkRehype)
     .use(rehypeSlugAndCollectHeadings, headings)
     .use(rehypeContentAssets)
+    .use(rehypeSanitize, sanitizeSchema)
     .use(rehypeKatex)
     .use(rehypePrism)
     .use(rehypeStringify)
