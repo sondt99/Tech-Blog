@@ -1,26 +1,15 @@
 import Layout from '@/layouts/Layout'
 import { getPage, getAllPages } from '@/lib/markdown'
-import { unified } from 'unified'
-import remarkParse from 'remark-parse'
-import remarkMath from 'remark-math'
-import remarkGfm from 'remark-gfm'
-import remarkRehype from 'remark-rehype'
-import rehypeKatex from 'rehype-katex'
-import rehypeStringify from 'rehype-stringify'
-import remarkEmoji from 'remark-emoji';
-import rehypeContentAssets from '@/lib/rehype-content-assets';
-import { siteConfig } from '@site-config';
-import rehypePrism from '@/lib/rehype-prism';
-import Timeline from '@/components/Timeline';
-import type { TimelineEntry } from '@/types/timeline';
-
+import { siteConfig } from '@site-config'
+import Timeline from '@/components/Timeline'
+import type { TimelineEntry } from '@/types/timeline'
 
 interface PageProps {
   page: {
     slug: string
     title: string
     lastUpdated: string | null
-    content: string
+    html: string
     timeline: TimelineEntry[]
   }
 }
@@ -30,26 +19,15 @@ const formatDate = (
   locale: string,
   options?: Intl.DateTimeFormatOptions
 ) => {
-  if (!value) return null;
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.toLocaleDateString(locale, options);
-};
+  if (!value) return null
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return null
+  return parsed.toLocaleDateString(locale, options)
+}
 
 export default function Page({ page }: PageProps) {
-  const formattedLastUpdated = formatDate(page.lastUpdated, siteConfig.page.lastUpdatedLocale);
-  const content = unified()
-    .use(remarkParse)
-    .use(remarkMath)
-    .use(remarkGfm)
-    .use(remarkEmoji)
-    .use(remarkRehype)
-    .use(rehypeContentAssets)
-    .use(rehypeKatex)
-    .use(rehypePrism)
-    .use(rehypeStringify)
-    .processSync(page.content)
-    .toString()
+  const formattedLastUpdated = formatDate(page.lastUpdated, siteConfig.page.lastUpdatedLocale)
+  const content = page.html
 
   return (
     <Layout title={page.title}>

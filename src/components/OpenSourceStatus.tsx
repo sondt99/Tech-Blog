@@ -128,7 +128,7 @@ export default function OpenSourceStatus() {
       label: isOutdated ? labels.outdated : labels.upToDate,
       tone: isOutdated ? ('warn' as StatusTone) : ('ok' as StatusTone)
     };
-  }, [state]);
+  }, [state, labels.checking, labels.outdated, labels.unknown, labels.upToDate]);
 
   const detailLines = useMemo(() => {
     if (!state.data) {

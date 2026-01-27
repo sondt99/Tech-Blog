@@ -72,6 +72,7 @@ html {
   font-family: 'JetBrains Mono', monospace;
   color: var(--fg);
   background-color: var(--bg);
+  scroll-behavior: smooth;
 }
 
 body {
@@ -109,6 +110,10 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .rise-in {
     animation: none;
     opacity: 1;

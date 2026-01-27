@@ -3,6 +3,18 @@ import path from 'path'
 import matter from 'gray-matter'
 import { resolveContentAssetUrl } from '@/lib/content-assets'
 import type { TimelineEntry } from '@/types/timeline'
+import type { TocItem } from '@/types/toc'
+import { unified } from 'unified'
+import remarkParse from 'remark-parse'
+import remarkMath from 'remark-math'
+import remarkGfm from 'remark-gfm'
+import remarkRehype from 'remark-rehype'
+import rehypeKatex from 'rehype-katex'
+import rehypeStringify from 'rehype-stringify'
+import remarkEmoji from 'remark-emoji'
+import rehypeContentAssets from '@/lib/rehype-content-assets'
+import rehypePrism from '@/lib/rehype-prism'
+import type { Plugin } from 'unified'
 
 const postsDirectory = path.join(process.cwd(), 'content')
 const pagesDirectory = path.join(process.cwd(), 'content', 'pages')
@@ -13,6 +25,14 @@ type PostStats = {
   headingCount: number
   codeBlockCount: number
   imageCount: number
+}
+
+type Node = {
+  type?: string
+  tagName?: string
+  properties?: Record<string, unknown>
+  children?: Node[]
+  value?: string
 }
 
 const normalizeTags = (value: unknown): string[] => {
@@ -104,6 +124,85 @@ const calculatePostStats = (content: string): PostStats => {
   }
 }
 
+const getText = (node: Node): string => {
+  if (node.type === 'text') {
+    return node.value ?? ''
+  }
+  if (!Array.isArray(node.children)) return ''
+  return node.children.map(getText).join('')
+}
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]/g, '')
+
+const HEADING_TAGS = new Set(['h2', 'h3', 'h4'])
+
+const rehypeSlugAndCollectHeadings: Plugin<[TocItem[]]> = (headings) => {
+  return (tree) => {
+    const root = tree as unknown as Node
+    const slugCounts = new Map<string, number>()
+
+    const visit = (node: Node) => {
+      if (node.type === 'element' && node.tagName && HEADING_TAGS.has(node.tagName)) {
+        const level = Number.parseInt(node.tagName.slice(1), 10)
+        if (Number.isFinite(level)) {
+          const text = getText(node).trim()
+          const existingId = node.properties?.id
+          const rawId = typeof existingId === 'string' ? existingId : slugify(text) || 'section'
+          const count = (slugCounts.get(rawId) || 0) + 1
+          slugCounts.set(rawId, count)
+          const id = count === 1 ? rawId : `${rawId}-${count}`
+
+          node.properties = {
+            ...(node.properties ?? {}),
+            id
+          }
+
+          headings.push({
+            id,
+            text,
+            level
+          })
+        }
+      }
+
+      if (Array.isArray(node.children)) {
+        node.children.forEach(visit)
+      }
+    }
+
+    visit(root)
+  }
+}
+
+type RenderMarkdownResult = {
+  html: string
+  headings: TocItem[]
+}
+
+const renderMarkdown = (content: string): RenderMarkdownResult => {
+  const headings: TocItem[] = []
+  const html = unified()
+    .use(remarkParse)
+    .use(remarkMath)
+    .use(remarkGfm)
+    .use(remarkEmoji)
+    .use(remarkRehype)
+    .use(rehypeSlugAndCollectHeadings, headings)
+    .use(rehypeContentAssets)
+    .use(rehypeKatex)
+    .use(rehypePrism)
+    .use(rehypeStringify)
+    .processSync(content)
+    .toString()
+
+  return { html, headings }
+}
+
 export function getAllPosts() {
   const fileNames = fs.readdirSync(postsDirectory)
   return fileNames
@@ -133,6 +232,7 @@ export function getPostBySlug(slug: string) {
     const fullPath = path.join(postsDirectory, `${slug}.md`)
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { data, content } = matter(fileContents)
+    const rendered = renderMarkdown(content)
     
     return {
       slug,
@@ -142,6 +242,8 @@ export function getPostBySlug(slug: string) {
       featured: resolveContentAssetUrl(data.featured || null),
       tags: normalizeTags(data.tags),
       stats: calculatePostStats(content),
+      html: rendered.html,
+      headings: rendered.headings,
       content
     }
   } catch (error) {
@@ -168,12 +270,14 @@ export function getPage(slug: string) {
     const fullPath = path.join(pagesDirectory, `${slug}.md`)
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { data, content } = matter(fileContents)
+    const rendered = renderMarkdown(content)
     
     return {
       slug,
       title: data.title,
       lastUpdated: data.lastUpdated ? String(data.lastUpdated) : null,
       timeline: normalizeTimelineEntries(data.timeline),
+      html: rendered.html,
       content
     }
   } catch (error) {

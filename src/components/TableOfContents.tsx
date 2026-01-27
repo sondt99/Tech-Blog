@@ -1,45 +1,40 @@
-import { useEffect, useState } from 'react';
-import { siteConfig } from '@site-config';
-
-interface TocItem {
-  id: string;
-  text: string;
-  level: number;
-}
+import { useEffect, useState } from 'react'
+import { siteConfig } from '@site-config'
+import type { TocItem } from '@/types/toc'
 
 interface TableOfContentsProps {
-  headings: TocItem[];
+  headings: TocItem[]
 }
 
 export default function TableOfContents({ headings }: TableOfContentsProps) {
-  const [activeId, setActiveId] = useState<string>('');
+  const [activeId, setActiveId] = useState<string>('')
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
+            setActiveId(entry.target.id)
           }
-        });
+        })
       },
       {
         rootMargin: '-100px 0% -80% 0%',
-        threshold: 0.25,
+        threshold: 0.25
       }
-    );
+    )
 
     headings.forEach(({ id }) => {
-      const element = document.getElementById(id);
+      const element = document.getElementById(id)
       if (element) {
-        observer.observe(element);
+        observer.observe(element)
       }
-    });
+    })
 
     return () => {
-      observer.disconnect();
-    };
-  }, [headings]);
+      observer.disconnect()
+    }
+  }, [headings])
 
   return (
     <nav className="hidden xl:block sticky top-24 ml-8 w-72 max-h-[calc(100vh-8rem)] overflow-y-auto toc-scrollbar">
@@ -61,12 +56,6 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
                     ? 'text-neutral-900 font-semibold dark:text-white'
                     : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
                 }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById(heading.id)?.scrollIntoView({
-                    behavior: 'smooth'
-                  });
-                }}
               >
                 {heading.text}
               </a>
@@ -75,5 +64,5 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
         </ul>
       </div>
     </nav>
-  );
+  )
 }
