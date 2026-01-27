@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { siteConfig } from '@/config/site';
+import { siteConfig } from '@site-config';
 
 interface TocItem {
   id: string;

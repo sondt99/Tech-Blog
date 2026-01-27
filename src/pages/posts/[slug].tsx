@@ -13,7 +13,7 @@ import TableOfContents from '@/components/TableOfContents';
 import remarkEmoji from 'remark-emoji'
 import rehypeContentAssets from '@/lib/rehype-content-assets'
 import TagList from '@/components/TagList';
-import { siteConfig } from '@/config/site';
+import { siteConfig } from '@site-config';
 import rehypePrism from '@/lib/rehype-prism';
 
 // Thêm interface cho heading

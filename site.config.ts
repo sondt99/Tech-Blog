@@ -4,23 +4,23 @@ export const siteConfig = {
   name: siteName,
   metaDescription: 'A professional blog about software development and technology',
   author: {
-    name: 'nosiaht'
+    name: 'nosiaht',
   },
   nav: {
     links: [
       {
         label: 'Github',
-        href: 'https://github.com/sondt99/Tech-Blog'
+        href: 'https://github.com/sondt99/Tech-Blog',
       },
       {
         label: 'About',
-        href: '/about'
+        href: '/about',
       },
       {
         label: 'Archivement',
-        href: '/archivement'
-      }
-    ]
+        href: '/archivement',
+      },
+    ],
   },
   home: {
     pageTitle: 'Home',
@@ -29,12 +29,12 @@ export const siteConfig = {
     subtitle: 'Something about infosec!...',
     readMoreLabel: 'Read more',
     noDateLabel: 'No date',
-    featuredAlt: 'Featured image'
+    featuredAlt: 'Featured image',
   },
   pagination: {
     previousLabel: 'Previous Page',
     nextLabel: 'Next Page',
-    pageLabel: 'Page'
+    pageLabel: 'Page',
   },
   post: {
     backToHomeLabel: 'Back to home',
@@ -45,36 +45,37 @@ export const siteConfig = {
       headings: 'Headings',
       codeBlocks: 'Code blocks',
       images: 'Images',
-      minutes: 'min'
+      minutes: 'min',
     },
     copyButtonLabel: 'Copy',
     copyButtonCopiedLabel: 'Copied!',
-    copyErrorLabel: 'Failed to copy'
+    copyErrorLabel: 'Failed to copy',
   },
   toc: {
-    title: 'Contents'
+    title: 'Contents',
   },
   page: {
     lastUpdatedLabel: 'Last updated:',
-    lastUpdatedLocale: 'vi-VN'
+    lastUpdatedLocale: 'vi-VN',
   },
   formatting: {
     dateLocale: 'en-EN',
     dateOptions: {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     },
-    numberLocale: 'en-US'
+    numberLocale: 'en-US',
   },
   footer: {
     aboutTitle: `About ${siteName}`,
-    aboutText: 'Sharing In-Depth Insights About Security, CTF Challenges, and Tech Architecture.',
+    aboutText:
+      'Sharing In-Depth Insights About Security, CTF Challenges, and Tech Architecture.',
     connectTitle: 'Connect',
     social: {
       githubUrl: 'https://github.com/sondt99',
-      xUrl: 'https://x.com/_sondt_'
-    }
+      xUrl: 'https://x.com/_sondt_',
+    },
   },
   openSource: {
     enabled: true,
@@ -89,10 +90,10 @@ export const siteConfig = {
       upToDate: 'Up to date',
       outdated: 'Outdated',
       unknown: 'Status unknown',
-      checking: 'Checking updates'
-    }
+      checking: 'Checking updates',
+    },
   },
   api: {
-    helloName: 'sondt'
-  }
+    helloName: 'sondt',
+  },
 } as const

@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { siteConfig } from "@/config/site";
+import { siteConfig } from '@site-config';
 
 type Data = {
   name: string;

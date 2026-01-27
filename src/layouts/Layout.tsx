@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { siteConfig } from '@/config/site'
+import { siteConfig } from '@site-config'
 
 interface LayoutProps {
   children: React.ReactNode

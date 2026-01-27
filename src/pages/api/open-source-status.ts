@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { siteConfig } from '@/config/site';
+import { siteConfig } from '@site-config';
 import { getSiteCommitFromEnv } from '@/lib/siteCommit';
 
 type ComparisonStatus = 'identical' | 'ahead' | 'behind' | 'diverged' | 'unknown';

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { siteConfig } from '@/config/site';
+import { siteConfig } from '@site-config';
 
 type ComparisonStatus = 'identical' | 'ahead' | 'behind' | 'diverged' | 'unknown';
 

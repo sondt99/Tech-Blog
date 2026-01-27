@@ -9,7 +9,7 @@ import rehypeKatex from 'rehype-katex'
 import rehypeStringify from 'rehype-stringify'
 import remarkEmoji from 'remark-emoji';
 import rehypeContentAssets from '@/lib/rehype-content-assets';
-import { siteConfig } from '@/config/site';
+import { siteConfig } from '@site-config';
 import rehypePrism from '@/lib/rehype-prism';
 import Timeline from '@/components/Timeline';
 import type { TimelineEntry } from '@/types/timeline';

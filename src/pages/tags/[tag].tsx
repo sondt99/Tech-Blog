@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Layout from '@/layouts/Layout';
 import TagList from '@/components/TagList';
 import { getAllPosts } from '@/lib/markdown';
-import { siteConfig } from '@/config/site';
+import { siteConfig } from '@site-config';
 
 interface TagPagePost {
   slug: string;

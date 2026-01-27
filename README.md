@@ -104,7 +104,7 @@ Raw HTML in Markdown is not rendered. If you need it, add `rehype-raw` and enabl
 
 ## Configuration
 
-- Site metadata, nav, and footer: `src/config/site.ts`
+- Site metadata, nav, and footer: `site.config.ts`
 - Global styles and theme tokens: `src/styles/globals.css`
 - Typography defaults: `tailwind.config.ts`
 - Header, footer, and theme toggle: `src/layouts/Layout.tsx`

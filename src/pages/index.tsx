@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getAllPosts } from '@/lib/markdown';
 import Layout from '@/layouts/Layout';
-import { siteConfig } from '@/config/site';
+import { siteConfig } from '@site-config';
 import TagList from '@/components/TagList';
 import OpenSourceStatus from '@/components/OpenSourceStatus';
 
