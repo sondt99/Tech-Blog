@@ -8,6 +8,17 @@ interface LayoutProps {
   title?: string
 }
 
+const themeInitScript = `
+(function() {
+  try {
+    var stored = localStorage.getItem('theme');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var isDark = stored === 'dark' || (!stored && prefersDark);
+    if (isDark) document.documentElement.classList.add('dark');
+  } catch (e) {}
+})();
+`
+
 export default function Layout({ children, title = 'Blog' }: LayoutProps) {
   const [isDark, setIsDark] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -57,6 +68,7 @@ export default function Layout({ children, title = 'Blog' }: LayoutProps) {
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <meta name="description" content={siteConfig.metaDescription} />
+          <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         </Head>
 
         <header className={`sticky top-0 z-50 transition-all duration-200 surface-bar ${isScrolled ? 'shadow-sm' : ''}`}>
