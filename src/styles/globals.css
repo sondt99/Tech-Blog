@@ -226,7 +226,7 @@ body {
          prose-blockquote:text-neutral-300;
 }
 
-.prose p > a:only-child {
+.prose p > a:only-child:has(img) {
   display: table;
   margin-left: auto;
   margin-right: auto;

@@ -56,6 +56,17 @@ export default function rehypeContentAssets() {
         }
       }
 
+      if (node.type === 'element' && node.tagName === 'a') {
+        const properties = node.properties ?? (node.properties = {});
+        const href = properties.href;
+        if (typeof href === 'string') {
+          const resolved = resolveContentAssetUrl(href);
+          if (resolved && resolved !== href) {
+            properties.href = resolved;
+          }
+        }
+      }
+
       if (
         parent &&
         typeof index === 'number' &&
