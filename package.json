@@ -5,6 +5,7 @@
     "scripts": {
         "dev": "next dev",
         "build": "next build",
+        "postbuild": "next-sitemap",
         "start": "next start",
         "lint": "next lint",
         "clean": "rimraf .next node_modules"
@@ -12,6 +13,7 @@
     "dependencies": {
         "gray-matter": "latest",
         "next": "^15.0.3",
+        "next-sitemap": "^4.2.3",
         "prism-react-renderer": "^2.4.0",
         "react": "latest",
         "react-dom": "latest",

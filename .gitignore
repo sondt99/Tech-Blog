@@ -39,6 +39,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# generated SEO files
+public/robots.txt
+public/sitemap*.xml
+
 # /content/*
 # !/content/hello-world.md
 # !/content/pages/about.md
