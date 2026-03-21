@@ -3,7 +3,7 @@ const path = require('path')
 
 const POSTS_PER_PAGE = 4
 
-const siteUrl = process.env.SITE_URL || 'https://yourdomain.com'
+const siteUrl = process.env.SITE_URL || 'https://blog.nosiaht.com'
 
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
