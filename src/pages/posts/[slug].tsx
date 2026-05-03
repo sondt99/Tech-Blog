@@ -1,5 +1,5 @@
 import { getAllPosts, getPostBySlug } from '@/lib/markdown'
-import Layout from '@/layouts/Layout'
+import Layout, { type JsonLdObject } from '@/layouts/Layout'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import TableOfContents from '@/components/TableOfContents'
@@ -9,8 +9,11 @@ import type { TocItem } from '@/types/toc'
 
 interface PostProps {
   post: {
+    slug: string
     title: string
     date: string | null
+    excerpt: string | null
+    featured: string | null
     tags: string[]
     html: string
     headings: TocItem[]
@@ -49,6 +52,58 @@ const formatDate = (
   const parsed = parseDateValue(value)
   if (!parsed) return null
   return parsed.toLocaleDateString(locale, options)
+}
+
+const toAbsoluteUrl = (pathOrUrl: string) => new URL(pathOrUrl, siteConfig.siteUrl).toString()
+
+const createPostJsonLd = (post: PostProps['post']): JsonLdObject[] => {
+  const postUrl = toAbsoluteUrl(`/posts/${post.slug}`)
+  const imageUrl = post.featured ? toAbsoluteUrl(post.featured) : null
+
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.title,
+      description: post.excerpt || siteConfig.metaDescription,
+      datePublished: post.date,
+      author: {
+        '@type': 'Person',
+        name: siteConfig.author.name,
+        url: siteConfig.footer.social.githubUrl,
+      },
+      publisher: {
+        '@type': 'Person',
+        name: siteConfig.author.name,
+        url: siteConfig.footer.social.githubUrl,
+      },
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': postUrl,
+      },
+      url: postUrl,
+      ...(imageUrl ? { image: imageUrl } : {}),
+      ...(post.tags.length > 0 ? { keywords: post.tags } : {}),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: siteConfig.siteUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: post.title,
+          item: postUrl,
+        },
+      ],
+    },
+  ]
 }
 
 export default function Post({ post }: PostProps) {
@@ -100,9 +155,10 @@ export default function Post({ post }: PostProps) {
   }, [post.html])
 
   const content = post.html
+  const jsonLd = createPostJsonLd(post)
 
   return (
-    <Layout title={post.title}>
+    <Layout title={post.title} jsonLd={jsonLd}>
       <article className="max-w-[1600px] mx-auto px-4 lg:px-8 rise-in" style={{ animationDelay: '60ms' }}>
         <div className="flex flex-col xl:flex-row">
           {/* Main content */}

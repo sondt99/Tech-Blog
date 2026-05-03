@@ -3,9 +3,13 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { siteConfig } from '@site-config'
 
+export type JsonLdValue = string | number | boolean | null | JsonLdValue[] | { [key: string]: JsonLdValue }
+export type JsonLdObject = { [key: string]: JsonLdValue }
+
 interface LayoutProps {
   children: React.ReactNode
   title?: string
+  jsonLd?: JsonLdObject | JsonLdObject[]
 }
 
 const themeInitScript = `
@@ -19,7 +23,9 @@ const themeInitScript = `
 })();
 `
 
-export default function Layout({ children, title = 'Blog' }: LayoutProps) {
+const serializeJsonLd = (item: JsonLdObject) => JSON.stringify(item).replace(/</g, '\\u003c')
+
+export default function Layout({ children, title = 'Blog', jsonLd }: LayoutProps) {
   const [isDark, setIsDark] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const isExternalLink = (href: string) =>
@@ -46,7 +52,7 @@ export default function Layout({ children, title = 'Blog' }: LayoutProps) {
   const currentYear = new Date().getFullYear()
   const themeUrl = 'https://github.com/sondt99/Tech-Blog'
   const authorName = siteConfig.author.name
-
+  const jsonLdItems = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []
 
   const toggleDarkMode = () => {
     setIsDark(!isDark)
@@ -68,6 +74,13 @@ export default function Layout({ children, title = 'Blog' }: LayoutProps) {
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <meta name="description" content={siteConfig.metaDescription} />
+          {jsonLdItems.map((item, index) => (
+            <script
+              key={`json-ld-${index}`}
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: serializeJsonLd(item) }}
+            />
+          ))}
           <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         </Head>
 

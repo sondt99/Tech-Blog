@@ -1,12 +1,34 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { getAllPosts } from '@/lib/markdown';
-import Layout from '@/layouts/Layout';
+import Layout, { type JsonLdObject } from '@/layouts/Layout';
 import { siteConfig } from '@site-config';
 import TagList from '@/components/TagList';
 import OpenSourceStatus from '@/components/OpenSourceStatus';
 
 export const POSTS_PER_PAGE = 4;
+
+const homeJsonLd: JsonLdObject[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: siteConfig.name,
+    url: siteConfig.siteUrl,
+    description: siteConfig.metaDescription,
+    publisher: {
+      '@type': 'Person',
+      name: siteConfig.author.name,
+      url: siteConfig.footer.social.githubUrl,
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: siteConfig.author.name,
+    url: siteConfig.footer.social.githubUrl,
+    sameAs: [siteConfig.footer.social.githubUrl, siteConfig.footer.social.xUrl],
+  },
+];
 
 interface PaginationProps {
   currentPage: number;
@@ -43,7 +65,7 @@ function Pagination({ currentPage, totalPages }: PaginationProps) {
 
 export default function Home({ posts, currentPage, totalPages }: HomeProps) {
   return (
-    <Layout title={siteConfig.home.pageTitle}>
+    <Layout title={siteConfig.home.pageTitle} jsonLd={currentPage === 1 ? homeJsonLd : undefined}>
       <div className="max-w-4xl mx-auto">
         <section className="mb-16 rise-in" style={{ animationDelay: '40ms' }}>
           <div className="inline-flex items-center gap-3 rounded-full border border-neutral-300/70 dark:border-neutral-700 bg-neutral-100/70 dark:bg-neutral-900/40 px-4 py-1 text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
