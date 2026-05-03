@@ -72,6 +72,7 @@ export default function Layout({ children, title = 'Blog', jsonLd }: LayoutProps
           <title>{title} - {siteConfig.name}</title>
           <link rel="icon" href="/favicon.ico" />
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" />
+          <link rel="alternate" type="application/rss+xml" title={`${siteConfig.name} RSS Feed`} href="/feed.xml" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <meta name="description" content={siteConfig.metaDescription} />
           {jsonLdItems.map((item, index) => (

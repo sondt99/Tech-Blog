@@ -21,6 +21,10 @@ export const siteConfig = {
         label: 'Achievement',
         href: '/achievement',
       },
+      {
+        label: 'RSS',
+        href: '/feed.xml',
+      },
     ],
   },
   home: {
