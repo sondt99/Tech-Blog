@@ -159,6 +159,7 @@ const slugify = (value: string) =>
     .replace(/[^\w-]/g, '')
 
 const HEADING_TAGS = new Set(['h2', 'h3', 'h4'])
+const SANITIZED_HEADING_ID_PREFIX = defaultSchema.clobberPrefix ?? ''
 
 const rehypeSlugAndCollectHeadings: Plugin<[TocItem[]]> = (headings) => {
   return (tree) => {
@@ -182,7 +183,7 @@ const rehypeSlugAndCollectHeadings: Plugin<[TocItem[]]> = (headings) => {
           }
 
           headings.push({
-            id,
+            id: `${SANITIZED_HEADING_ID_PREFIX}${id}`,
             text,
             level
           })
