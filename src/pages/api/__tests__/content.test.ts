@@ -86,4 +86,24 @@ describe('GET /api/content/[...path]', () => {
     expect(res._getStatusCode()).toBe(200)
     expect(res.getHeader('Content-Type')).toBe('image/png')
   })
+
+  it('returns 405 for non-GET requests', async () => {
+    const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
+      method: 'POST',
+      query: { path: ['images', 'photo.png'] },
+    })
+    await handler(req, res)
+    expect(res._getStatusCode()).toBe(405)
+  })
+
+  it('returns 413 when file exceeds 10 MB', async () => {
+    mockStat.mockResolvedValue({ isFile: () => true, size: 11 * 1024 * 1024 })
+
+    const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
+      method: 'GET',
+      query: { path: ['images', 'huge.png'] },
+    })
+    await handler(req, res)
+    expect(res._getStatusCode()).toBe(413)
+  })
 })
