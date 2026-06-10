@@ -16,17 +16,16 @@ import rehypeContentAssets from '@/lib/rehype-content-assets'
 import rehypePrism from '@/lib/rehype-prism'
 import type { Plugin } from 'unified'
 import rehypeSanitize, { defaultSchema, type Options as SanitizeSchema } from 'rehype-sanitize'
+import {
+  normalizeTags,
+  parseDateToTimestamp,
+  calculatePostStats,
+} from '@/lib/post-utils'
+
+export { normalizeTags, parseDateToTimestamp, calculatePostStats }
 
 const postsDirectory = path.join(process.cwd(), 'content')
 const pagesDirectory = path.join(process.cwd(), 'content', 'pages')
-
-type PostStats = {
-  wordCount: number
-  readingTimeMinutes: number
-  headingCount: number
-  codeBlockCount: number
-  imageCount: number
-}
 
 type Node = {
   type?: string
@@ -34,25 +33,6 @@ type Node = {
   properties?: Record<string, unknown>
   children?: Node[]
   value?: string
-}
-
-const normalizeTags = (value: unknown): string[] => {
-  if (Array.isArray(value)) {
-    const tags = value
-      .map((tag) => String(tag).trim())
-      .filter((tag) => tag.length > 0)
-    return Array.from(new Set(tags))
-  }
-
-  if (typeof value === 'string') {
-    const tags = value
-      .split(',')
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0)
-    return Array.from(new Set(tags))
-  }
-
-  return []
 }
 
 const normalizeTimelineEntries = (value: unknown): TimelineEntry[] => {
@@ -85,62 +65,6 @@ const normalizeTimelineEntries = (value: unknown): TimelineEntry[] => {
       return normalized
     })
     .filter((entry): entry is TimelineEntry => Boolean(entry))
-}
-
-const countMatches = (value: string, regex: RegExp): number => {
-  const matches = value.match(regex)
-  return matches ? matches.length : 0
-}
-
-const stripMarkdown = (value: string): string => {
-  return value
-    .replace(/```[\s\S]*?```/g, ' ')
-    .replace(/`[^`]*`/g, ' ')
-    .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/^#{1,6}\s+/gm, ' ')
-    .replace(/^>\s+/gm, ' ')
-    .replace(/^\s*[-+*]\s+/gm, ' ')
-    .replace(/^\s*\d+\.\s+/gm, ' ')
-    .replace(/[*_~]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-const calculatePostStats = (content: string): PostStats => {
-  const text = stripMarkdown(content)
-  const wordCount = text ? text.split(/\s+/).length : 0
-  const readingTimeMinutes = wordCount === 0 ? 0 : Math.max(1, Math.ceil(wordCount / 200))
-  const headingCount = countMatches(content, /^#{1,6}\s+/gm)
-  const codeBlockCount = countMatches(content, /```[\s\S]*?```/g)
-  const imageCount = countMatches(content, /!\[[^\]]*]\([^)]*\)/g)
-
-  return {
-    wordCount,
-    readingTimeMinutes,
-    headingCount,
-    codeBlockCount,
-    imageCount
-  }
-}
-
-const parseDateToTimestamp = (value: unknown): number => {
-  if (typeof value !== 'string') return Number.NEGATIVE_INFINITY
-
-  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  if (dateOnlyMatch) {
-    const [, year, month, day] = dateOnlyMatch
-    const parsed = new Date(
-      Number.parseInt(year, 10),
-      Number.parseInt(month, 10) - 1,
-      Number.parseInt(day, 10)
-    )
-    return Number.isNaN(parsed.getTime()) ? Number.NEGATIVE_INFINITY : parsed.getTime()
-  }
-
-  const parsed = new Date(value)
-  return Number.isNaN(parsed.getTime()) ? Number.NEGATIVE_INFINITY : parsed.getTime()
 }
 
 const getText = (node: Node): string => {
@@ -214,24 +138,33 @@ const sanitizeSchema: SanitizeSchema = {
   }
 }
 
-const renderMarkdown = (content: string): RenderMarkdownResult => {
+const renderMarkdown = (content: string, slug?: string): RenderMarkdownResult => {
   const headings: TocItem[] = []
-  const html = unified()
-    .use(remarkParse)
-    .use(remarkMath)
-    .use(remarkGfm)
-    .use(remarkEmoji)
-    .use(remarkRehype)
-    .use(rehypeSlugAndCollectHeadings, headings)
-    .use(rehypeContentAssets)
-    .use(rehypeSanitize, sanitizeSchema)
-    .use(rehypeKatex)
-    .use(rehypePrism)
-    .use(rehypeStringify)
-    .processSync(content)
-    .toString()
+  try {
+    const html = unified()
+      .use(remarkParse)
+      .use(remarkMath)
+      .use(remarkGfm)
+      .use(remarkEmoji)
+      .use(remarkRehype)
+      .use(rehypeSlugAndCollectHeadings, headings)
+      .use(rehypeContentAssets)
+      .use(rehypeSanitize, sanitizeSchema)
+      .use(rehypeKatex)
+      .use(rehypePrism)
+      .use(rehypeStringify)
+      .processSync(content)
+      .toString()
 
-  return { html, headings }
+    return { html, headings }
+  } catch (err) {
+    console.error(`[markdown] Failed to render content${slug ? ` for "${slug}"` : ''}:`, err)
+    const escaped = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    return {
+      html: `<pre class="render-error"><code>${escaped}</code></pre>`,
+      headings: [],
+    }
+  }
 }
 
 export function getAllPosts() {
@@ -244,7 +177,7 @@ export function getAllPosts() {
       const fullPath = path.join(postsDirectory, fileName)
       const fileContents = fs.readFileSync(fullPath, 'utf8')
       const { data, content } = matter(fileContents)
-      
+
       return {
         slug: fileName.replace(/\.md$/, ''),
         title: data.title,
@@ -252,8 +185,13 @@ export function getAllPosts() {
         excerpt: data.excerpt,
         featured: resolveContentAssetUrl(data.featured || null),
         tags: normalizeTags(data.tags),
+        draft: data.draft === true,
         content
       }
+    })
+    .filter(post => {
+      if (process.env.NODE_ENV === 'production' && post.draft) return false
+      return true
     })
     .sort((a, b) => parseDateToTimestamp(b.date) - parseDateToTimestamp(a.date))
 }
@@ -263,8 +201,8 @@ export function getPostBySlug(slug: string) {
     const fullPath = path.join(postsDirectory, `${slug}.md`)
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { data, content } = matter(fileContents)
-    const rendered = renderMarkdown(content)
-    
+    const rendered = renderMarkdown(content, slug)
+
     return {
       slug,
       title: data.title,
@@ -272,6 +210,7 @@ export function getPostBySlug(slug: string) {
       excerpt: data.excerpt,
       featured: resolveContentAssetUrl(data.featured || null),
       tags: normalizeTags(data.tags),
+      draft: data.draft === true,
       stats: calculatePostStats(content),
       html: rendered.html,
       headings: rendered.headings,
@@ -301,8 +240,8 @@ export function getPage(slug: string) {
     const fullPath = path.join(pagesDirectory, `${slug}.md`)
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { data, content } = matter(fileContents)
-    const rendered = renderMarkdown(content)
-    
+    const rendered = renderMarkdown(content, slug)
+
     return {
       slug,
       title: data.title,
