@@ -1,4 +1,3 @@
-import { GetServerSideProps } from 'next';
 import { getAllPosts } from '@/lib/markdown';
 import { POSTS_PER_PAGE } from '../index';
 import Home, { HomeProps } from '../index';
@@ -15,8 +14,18 @@ const PageComponent = ({ posts, currentPage, totalPages, searchPosts }: HomeProp
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const currentPage = Number(params?.page) || 1;
+export async function getStaticPaths() {
+  const allPosts = getAllPosts();
+  const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
+  const paths = Array.from({ length: totalPages }, (_, i) => ({
+    params: { page: String(i + 1) },
+  })).filter((p) => p.params.page !== '1');
+
+  return { paths, fallback: 'blocking' };
+}
+
+export async function getStaticProps({ params }: { params: { page: string } }) {
+  const currentPage = Number(params.page) || 1;
   const allPosts = getAllPosts();
   const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
 
@@ -25,9 +34,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   }
 
   if (currentPage === 1) {
-    return {
-      redirect: { destination: '/', permanent: false },
-    };
+    return { redirect: { destination: '/', permanent: false } };
   }
 
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
@@ -53,7 +60,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         tags: post.tags,
       })) satisfies SearchPost[],
     },
+    revalidate: 3600,
   };
-};
+}
 
 export default PageComponent;
