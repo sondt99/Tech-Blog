@@ -1,7 +1,7 @@
 import { getAllPosts, getPostBySlug } from '@/lib/markdown'
 import Layout, { type JsonLdObject } from '@/layouts/Layout'
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import TableOfContents from '@/components/TableOfContents'
 import TagList from '@/components/TagList'
 import { siteConfig } from '@site-config'
@@ -25,6 +25,51 @@ interface PostProps {
       imageCount: number
     }
   }
+}
+
+function ShareButtons({ url, title }: { url: string; title: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // clipboard not available
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-3 mt-4">
+      <a
+        href={twitterUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+        aria-label="Share on Twitter/X"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+        Share
+      </a>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+        aria-label="Copy link"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+        </svg>
+        {copied ? 'Copied!' : 'Copy Link'}
+      </button>
+    </div>
+  )
 }
 
 const parseDateValue = (value: string): Date | null => {
@@ -109,6 +154,22 @@ const createPostJsonLd = (post: PostProps['post']): JsonLdObject[] => {
 export default function Post({ post }: PostProps) {
   const headings = post.headings
   const contentRef = useRef<HTMLDivElement>(null)
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = contentRef.current
+      if (!el) return
+      const { top, height } = el.getBoundingClientRect()
+      const windowHeight = window.innerHeight
+      const scrolled = Math.max(0, -top)
+      const total = Math.max(1, height - windowHeight)
+      setProgress(Math.min(100, Math.round((scrolled / total) * 100)))
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const formattedDate = formatDate(
     post.date,
     siteConfig.formatting.dateLocale,
@@ -159,6 +220,7 @@ export default function Post({ post }: PostProps) {
 
   return (
     <Layout title={post.title} jsonLd={jsonLd}>
+      <div style={{ width: progress + '%' }} className="fixed top-16 left-0 h-0.5 bg-neutral-900 dark:bg-white z-40 transition-[width] duration-100" aria-hidden="true" />
       <article className="max-w-[1600px] mx-auto px-4 lg:px-8 rise-in" style={{ animationDelay: '60ms' }}>
         <div className="flex flex-col xl:flex-row">
           {/* Main content */}
@@ -167,6 +229,13 @@ export default function Post({ post }: PostProps) {
               <Link href="/" className="text-xs font-mono uppercase tracking-widest text-neutral-600 hover:text-neutral-900 mb-8 inline-block dark:text-neutral-400 dark:hover:text-white">
                 {siteConfig.post.backToHomeLabel}
               </Link>
+              <nav aria-label="Breadcrumb">
+                <ol className="text-xs font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2 mb-4">
+                  <li><Link href="/" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Home</Link></li>
+                  <li aria-hidden="true">/</li>
+                  <li aria-current="page" className="truncate">{post.title}</li>
+                </ol>
+              </nav>
               <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight mb-4 text-neutral-900 dark:text-white">{post.title}</h1>
               {formattedDate ? (
                 <time className="text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
@@ -174,6 +243,7 @@ export default function Post({ post }: PostProps) {
                 </time>
               ) : null}
               <TagList tags={post.tags} className="mt-3" />
+              <ShareButtons url={toAbsoluteUrl(`/posts/${post.slug}`)} title={post.title} />
             </div>
 
             <section className="mb-8">
