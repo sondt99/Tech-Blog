@@ -315,12 +315,12 @@ export async function getStaticPaths() {
     paths: posts.map((post) => ({
       params: { slug: post.slug }
     })),
-    fallback: false
+    fallback: 'blocking'
   }
 }
 
-export async function getStaticProps({ 
-  params 
+export async function getStaticProps({
+  params
 }: {
   params: { slug: string }
 }) {
@@ -331,6 +331,7 @@ export async function getStaticProps({
     }
   }
   return {
-    props: { post }
+    props: { post },
+    revalidate: 3600
   }
 }
