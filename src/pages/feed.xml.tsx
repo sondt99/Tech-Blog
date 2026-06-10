@@ -1,5 +1,5 @@
 import type { GetServerSideProps } from 'next'
-import { getAllPosts } from '@/lib/markdown'
+import { getAllPosts, getPostBySlug } from '@/lib/markdown'
 import { siteConfig } from '@site-config'
 
 function Feed() {
@@ -44,19 +44,22 @@ const createRssFeed = (origin: string) => {
       const postUrl = toAbsoluteUrl(origin, `/posts/${post.slug}`)
       const pubDate = formatRssDate(post.date)
       const description = post.excerpt || siteConfig.metaDescription
+      const full = getPostBySlug(post.slug)
+      const htmlContent = full?.html ?? ''
 
       return `    <item>
       <title>${escapeXml(post.title || post.slug)}</title>
       <link>${escapeXml(postUrl)}</link>
       <guid isPermaLink="true">${escapeXml(postUrl)}</guid>${pubDate ? `\n      <pubDate>${escapeXml(pubDate)}</pubDate>` : ''}
       <description>${escapeXml(description)}</description>
+      <content:encoded><![CDATA[${htmlContent}]]></content:encoded>
       <author>${escapeXml(siteConfig.author.name)}</author>${post.tags.map((tag) => `\n      <category>${escapeXml(tag)}</category>`).join('')}
     </item>`
     })
     .join('\n')
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${escapeXml(siteConfig.name)}</title>
     <link>${escapeXml(siteUrl)}</link>
