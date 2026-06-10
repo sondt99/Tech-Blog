@@ -5,6 +5,7 @@ import Layout, { type JsonLdObject } from '@/layouts/Layout';
 import { siteConfig } from '@site-config';
 import TagList from '@/components/TagList';
 import OpenSourceStatus from '@/components/OpenSourceStatus';
+import type { SearchPost } from '@/components/SearchModal';
 
 export const POSTS_PER_PAGE = 4;
 
@@ -63,9 +64,9 @@ function Pagination({ currentPage, totalPages }: PaginationProps) {
   );
 }
 
-export default function Home({ posts, currentPage, totalPages }: HomeProps) {
+export default function Home({ posts, currentPage, totalPages, searchPosts }: HomeProps) {
   return (
-    <Layout title={siteConfig.home.pageTitle} jsonLd={currentPage === 1 ? homeJsonLd : undefined}>
+    <Layout title={siteConfig.home.pageTitle} jsonLd={currentPage === 1 ? homeJsonLd : undefined} searchPosts={searchPosts}>
       <div className="max-w-4xl mx-auto">
         <section className="mb-16 rise-in" style={{ animationDelay: '40ms' }}>
           <div className="inline-flex items-center gap-3 rounded-full border border-neutral-300/70 dark:border-neutral-700 bg-neutral-100/70 dark:bg-neutral-900/40 px-4 py-1 text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
@@ -150,7 +151,10 @@ export interface HomeProps {
   }[];
   currentPage: number;
   totalPages: number;
+  searchPosts: SearchPost[];
 }
+
+export type { SearchPost };
 
 export async function getStaticProps() {
   const allPosts = getAllPosts();
@@ -168,6 +172,12 @@ export async function getStaticProps() {
       })),
       currentPage: 1,
       totalPages,
+      searchPosts: allPosts.map((post) => ({
+        slug: post.slug,
+        title: post.title || null,
+        excerpt: post.excerpt || null,
+        tags: post.tags,
+      })),
     },
   };
 }

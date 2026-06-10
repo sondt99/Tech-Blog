@@ -65,11 +65,24 @@ export const stripMarkdown = (value: string): string => {
 }
 
 export const calculatePostStats = (content: string): PostStats => {
+  const codeBlockMatches = content.match(/```[\s\S]*?```/g) ?? []
+  const codeBlockCount = codeBlockMatches.length
+  const codeWordCount = codeBlockMatches.reduce((sum, block) => {
+    const inner = block.replace(/^```[^\n]*\n?/, '').replace(/```$/, '').trim()
+    return sum + (inner ? inner.split(/\s+/).length : 0)
+  }, 0)
+
   const text = stripMarkdown(content)
   const wordCount = text ? text.split(/\s+/).length : 0
-  const readingTimeMinutes = wordCount === 0 ? 0 : Math.max(1, Math.ceil(wordCount / 200))
+
+  const proseMinutes = wordCount / 200
+  const codeMinutes = codeWordCount / 50
+  const readingTimeMinutes =
+    wordCount === 0 && codeWordCount === 0
+      ? 0
+      : Math.max(1, Math.ceil(proseMinutes + codeMinutes))
+
   const headingCount = countMatches(content, /^#{1,6}\s+/gm)
-  const codeBlockCount = countMatches(content, /```[\s\S]*?```/g)
   const imageCount = countMatches(content, /!\[[^\]]*]\([^)]*\)/g)
 
   return {
