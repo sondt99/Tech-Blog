@@ -23,7 +23,15 @@ function getContentType(filePath: string) {
   return contentTypeByExtension[extension] || 'application/octet-stream';
 }
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET')
+    res.status(405).end('Method Not Allowed')
+    return
+  }
+
   const pathParts = req.query.path;
   const segments = Array.isArray(pathParts) ? pathParts : pathParts ? [pathParts] : [];
 
@@ -51,6 +59,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const stat = await fs.stat(resolvedPath);
     if (!stat.isFile()) {
       res.status(404).end('Not found');
+      return;
+    }
+
+    if (stat.size > MAX_FILE_SIZE) {
+      res.status(413).end('File too large');
       return;
     }
 
