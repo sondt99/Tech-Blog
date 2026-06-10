@@ -185,6 +185,10 @@ export default function Post({ post }: PostProps) {
       }, 2000)
     } catch (err) {
       console.error(`${siteConfig.post.copyErrorLabel}:`, err)
+      buttonElement.textContent = siteConfig.post.copyErrorLabel
+      setTimeout(() => {
+        buttonElement.textContent = siteConfig.post.copyButtonLabel
+      }, 2000)
     }
   }
 
