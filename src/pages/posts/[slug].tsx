@@ -7,6 +7,13 @@ import TagList from '@/components/TagList'
 import { siteConfig } from '@site-config'
 import type { TocItem } from '@/types/toc'
 
+interface RelatedPost {
+  slug: string
+  title: string | null
+  excerpt: string | null
+  tags: string[]
+}
+
 interface PostProps {
   post: {
     slug: string
@@ -25,6 +32,7 @@ interface PostProps {
       imageCount: number
     }
   }
+  relatedPosts: RelatedPost[]
 }
 
 function ShareButtons({ url, title }: { url: string; title: string }) {
@@ -151,7 +159,43 @@ const createPostJsonLd = (post: PostProps['post']): JsonLdObject[] => {
   ]
 }
 
-export default function Post({ post }: PostProps) {
+function RelatedPosts({ posts }: { posts: RelatedPost[] }) {
+  if (!posts.length) return null
+  return (
+    <section className="mt-12">
+      <h2 className="text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-6">
+        Related Posts
+      </h2>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {posts.map((p) => (
+          <Link
+            key={p.slug}
+            href={`/posts/${p.slug}`}
+            className="group block surface-panel rounded-xl p-5 hover:shadow-md transition-shadow"
+          >
+            <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:underline underline-offset-2 mb-2 line-clamp-2">
+              {p.title}
+            </h3>
+            {p.excerpt && (
+              <p className="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">{p.excerpt}</p>
+            )}
+            {p.tags.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1">
+                {p.tags.slice(0, 3).map((tag) => (
+                  <span key={tag} className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </Link>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+export default function Post({ post, relatedPosts }: PostProps) {
   const headings = post.headings
   const contentRef = useRef<HTMLDivElement>(null)
   const [progress, setProgress] = useState(0)
@@ -303,6 +347,8 @@ export default function Post({ post }: PostProps) {
             <div className="prose mx-auto surface-panel rounded-xl p-6 dark:prose-invert text-neutral-900 dark:text-neutral-100">
               <div ref={contentRef} dangerouslySetInnerHTML={{ __html: content }} />
             </div>
+
+            <RelatedPosts posts={relatedPosts} />
           </div>
 
           {/* Table of Contents */}
@@ -334,8 +380,24 @@ export async function getStaticProps({
       notFound: true
     }
   }
+
+  const allPosts = getAllPosts()
+  const relatedPosts = allPosts
+    .filter((p) => p.slug !== params.slug)
+    .map((p) => ({
+      slug: p.slug,
+      title: p.title || null,
+      excerpt: p.excerpt || null,
+      tags: p.tags,
+      score: p.tags.filter((t) => post.tags.includes(t)).length,
+    }))
+    .filter((p) => p.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(({ score: _score, ...p }) => p)
+
   return {
-    props: { post },
+    props: { post, relatedPosts },
     revalidate: 3600
   }
 }
