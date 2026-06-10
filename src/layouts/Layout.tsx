@@ -12,17 +12,6 @@ interface LayoutProps {
   jsonLd?: JsonLdObject | JsonLdObject[]
 }
 
-const themeInitScript = `
-(function() {
-  try {
-    var stored = localStorage.getItem('theme');
-    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var isDark = stored === 'dark' || (!stored && prefersDark);
-    if (isDark) document.documentElement.classList.add('dark');
-  } catch (e) {}
-})();
-`
-
 const serializeJsonLd = (item: JsonLdObject) => JSON.stringify(item).replace(/</g, '\\u003c')
 
 export default function Layout({ children, title = 'Blog', jsonLd }: LayoutProps) {
@@ -31,14 +20,10 @@ export default function Layout({ children, title = 'Blog', jsonLd }: LayoutProps
   const isExternalLink = (href: string) =>
     href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//')
 
+  // Sync React state from the DOM class set by _document.tsx's inline script.
+  // Do NOT manipulate classList here — _document.tsx already did it before first paint.
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDark(true)
-      document.documentElement.classList.add('dark')
-    }
+    setIsDark(document.documentElement.classList.contains('dark'))
   }, [])
 
   useEffect(() => {
@@ -82,7 +67,6 @@ export default function Layout({ children, title = 'Blog', jsonLd }: LayoutProps
               dangerouslySetInnerHTML={{ __html: serializeJsonLd(item) }}
             />
           ))}
-          <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         </Head>
 
         <header className={`sticky top-0 z-50 transition-all duration-200 surface-bar ${isScrolled ? 'shadow-sm' : ''}`}>
