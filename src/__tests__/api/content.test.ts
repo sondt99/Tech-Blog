@@ -7,7 +7,7 @@ jest.mock('fs/promises', () => ({
 }))
 
 import * as fs from 'fs/promises'
-import handler from '../content/[...path]'
+import handler from '../../pages/api/content/[...path]'
 
 const mockStat = fs.stat as jest.Mock
 const mockReadFile = fs.readFile as jest.Mock
